@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import matplotlib.patheffects as PathEffects
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import timedelta
 from puck import Puck
 
 
@@ -67,7 +65,7 @@ class CalendarPlotter:
     def plot_engagements(self):
         # Create a dictionary to store the engagements by date
         engagements_by_date = {}
-        category_counters = {'Mil-Mil (US)': 0, 'Mil-Mil (ROK)': 0, 'Civ-Mil': 0}
+        category_counters = {'Mil-Mil (US)': 1, 'Mil-Mil (ROK)': 1, 'Civ-Mil': 1}
 
         # Store each engagement
         for index, row in self.engagements.iterrows():
@@ -83,8 +81,8 @@ class CalendarPlotter:
                 engagements_by_date[(week_index, day_index)]['engagements'].append(row)
 
         # Function to wrap text
-        def wrap_text(this_text, max_length):
-            words = this_text.split()
+        def wrap_text(text, max_length):
+            words = text.split()
             wrapped_text = ""
             line = ""
             for word in words:
@@ -104,47 +102,22 @@ class CalendarPlotter:
             return wrapped_text
 
         # Plot engagements
-        radius = 0.6
-
         for (week_index, day_index), info in engagements_by_date.items():
             x_pos = day_index * 10
             y_pos = (week_index * 10) - 7
 
             for idx, engagement in enumerate(info['engagements']):
-                y_offset = y_pos + 2 * idx   # Adjust y position by +2 for each additional event
-                # x_offset = x_pos + 1
+                y_offset = y_pos + 2 * idx  # Adjust y position by +2 for each additional event
 
-                # Determine the shape based on the category
-                category = engagement['category']
-                category_counters[category] += 1
-                # color = engagement['color']
-
-                # p = Puck(category, color, x_pos, y_pos, x_offset, y_offset, radius)
-
-                if category == 'Mil-Mil (US)':
-                    marker = mpatches.RegularPolygon((x_pos + 1, y_offset + 9), numVertices=3, radius=radius * 1.5,
-                                                     orientation=-3.14 / 2, color=engagement['color'],
-                                                     ec='black', lw=1.5)
-                elif category == 'Mil-Mil (ROK)':
-                    marker = mpatches.Circle((x_pos + 1, y_offset + 9), radius, color=engagement['color'],
-                                             ec='black', lw=1.5)
-                else:
-                    marker = mpatches.Rectangle((x_pos + 1 - radius, y_offset + 9 - radius), radius * 2, radius * 2, color=engagement['color'],
-                                                ec='black', lw=1.5)
-
-                shadow = mpatches.Shadow(marker, -0.01, -0.01, alpha=0.3, zorder=10)
-
-                self.ax.add_patch(shadow)
-                self.ax.add_patch(marker)
-
-                text = self.ax.text(x_pos + 1, y_offset + 9, str(category_counters[category]), ha='center', va='center',
-                                    color='white', fontweight='bold', zorder=10)
-                text.set_path_effects([PathEffects.withStroke(linewidth=3, foreground='black')])
+                puck = Puck(x_pos + 1, y_offset + 9, engagement['category'], engagement['color'],
+                            category_counters[engagement['category']], scale=5)
+                puck.add_to_axes(self.ax)
+                category_counters[engagement['category']] += 1
 
                 # Wrap engagement text to fit within the day cell
                 wrapped_engagement = wrap_text(engagement['engagement'],
                                                max_length=22)  # Adjust max_length as necessary
-                self.ax.text(x_pos + 2, y_offset + 9, wrapped_engagement, ha='left', va='center', fontsize=10, wrap=True)
+                self.ax.text(x_pos + 2, y_offset + 9, wrapped_engagement, ha='left', va='center', fontsize=8, wrap=True)
 
         return category_counters
 

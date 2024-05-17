@@ -52,8 +52,7 @@ class EngagementsPlotter:
 
         # Add the map image on the right half
         self.slide.shapes.add_picture(self.map_plotter.output_image, Inches(5), prs.slide_height - Inches(6),
-                                      width=Inches(5),
-                                      height=Inches(6))
+                                      width=Inches(5), height=Inches(6))
 
         # Save the PowerPoint presentation
         prs.save(self.ppt_output)

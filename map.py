@@ -1,11 +1,11 @@
 import geopandas as gpd
 import pandas as pd
 import matplotlib.pyplot as plt
-from shapely.geometry import Point
+import matplotlib.patches as mpatches
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-import matplotlib.patches as mpatches
-from matplotlib.patheffects import withStroke
+from puck import Puck
+
 
 class MapPlotter:
     def __init__(self, engagements_file='data/engagements.csv', bases_file='data/bases.csv', output_image='map.png'):
@@ -31,18 +31,18 @@ class MapPlotter:
         gdf.set_crs(epsg=4326, inplace=True)
         return gdf
 
-    def plot_legend(self, ax):
+    def plot_legend(self, ax, scale=1):
         # Add legend at the top of the map
         legend_x_start = 124.5
         legend_y = 38.8  # Adjust y position for the legend
         categories = ['Mil-Mil (US)', 'Mil-Mil (ROK)', 'Civ-Mil']
         colors = ['grey', 'grey', 'grey']
-        shapes = ['triangle', 'circle', 'square']
 
         # Draw white rectangle with a black outline around the legend
-        rect = mpatches.Rectangle((legend_x_start - 0.45, legend_y - 0.2), 8.35, 0.4, facecolor='white',
-                                  edgecolor='black', lw=2, zorder=30, path_effects=[withStroke(linewidth=2, foreground='black')])
-        shadow = mpatches.Shadow(rect, -0.02, -0.02, alpha=0.25, zorder=29)
+        rect = mpatches.Rectangle((legend_x_start - 0.5, legend_y - 0.3), 8.5, 0.6 * scale, facecolor='white',
+                                  edgecolor='black', lw=1, zorder=1)
+        shadow = mpatches.Rectangle((legend_x_start - 0.52, legend_y - 0.32), 8.5, 0.6 * scale,
+                                    facecolor=(0, 0, 0, 0.3), zorder=0)
         ax.add_patch(shadow)
         ax.add_patch(rect)
 
@@ -51,18 +51,9 @@ class MapPlotter:
             x = legend_x_start + i * 2.5
             y = legend_y
 
-            if shapes[i] == 'triangle':
-                marker = mpatches.RegularPolygon((x, y), numVertices=3, radius=0.12, orientation=-3.14 / 2,
-                                                 color=colors[i], zorder=32)
-            elif shapes[i] == 'circle':
-                marker = mpatches.Circle((x, y), 0.12, color=colors[i], zorder=32)
-            else:  # 'square'
-                marker = mpatches.Rectangle((x - 0.12, y - 0.12), 0.24, 0.24, color=colors[i],
-                                            zorder=32)
-
-            ax.add_patch(marker)
-            ax.text(x, y, str(count), ha='center', va='center', color='white', fontweight='bold', zorder=33)
-            ax.text(x + 0.4, y, category, ha='left', va='center', fontsize=12, zorder=33)
+            puck = Puck(x, y, category, colors[i], count, scale=scale)
+            puck.add_to_axes(ax)
+            ax.text(x + 0.4 * scale, y, category, ha='left', va='center', fontsize=12 * scale, zorder=3)
 
     def plot_map(self):
         # Create the plot with cartopy
@@ -80,11 +71,16 @@ class MapPlotter:
         ax.add_feature(cfeature.RIVERS, edgecolor='blue')
 
         # Color South Korea and North Korea
-        countries = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-        rok = countries[countries['name'] == 'South Korea']
-        dprk = countries[countries['name'] == 'North Korea']
+        countries = gpd.read_file('data/10m_cultural/ne_10m_admin_0_countries_usa.shp')
+        #countries = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        rok = countries[countries['ADM0_A3_US'] == 'KOR']
+        # rok = gpd.read_file('data/10m_cultural/ne_10m_admin_0_countries_kor.shp')
+        dprk = countries[countries['ADM0_A3_US'] == 'PRK']
+        # dprk = gpd.read_file('data/10m_cultural/')
+        jpn = countries[countries['ADM0_A3_US'] == 'JPN']
         rok.plot(ax=ax, facecolor='lightblue')
         dprk.plot(ax=ax, facecolor='red')
+        jpn.plot(ax=ax, facecolor='white')
 
         # Plot the GeoDataFrame
         offset_dict = {}
@@ -105,24 +101,11 @@ class MapPlotter:
                 x = base_x + x_offset
                 y = base_y + y_offset
 
-                if row['category'] == 'Mil-Mil (US)':
-                    marker = mpatches.RegularPolygon((x, y), numVertices=3, radius=0.12, orientation=-3.14 / 2,
-                                                     color=row['color'], ec='black', lw=1, zorder=11)
-                elif row['category'] == 'Mil-Mil (ROK)':
-                    marker = mpatches.Circle((x, y), 0.08, color=row['color'], ec='black', lw=1, zorder=11)
-                else:
-                    marker = mpatches.Rectangle((x - 0.06, y - 0.06), 0.12, 0.12, color=row['color'], ec='black', lw=1,
-                                                zorder=11)
-
-                shadow = mpatches.Shadow(marker, -0.01, -0.01, alpha=0.3, zorder=10)
-
-                ax.add_patch(shadow)
-                ax.add_patch(marker)
-                ax.text(x, y, str(num), fontsize=10, ha='center', va='center', color='white', fontweight='bold',
-                        zorder=12, transform=ccrs.PlateCarree())
+                puck = Puck(x, y, row['category'], row['color'], num, scale=1)
+                puck.add_to_axes(ax)
 
         # Add legend
-        self.plot_legend(ax)
+        self.plot_legend(ax, scale=1)
 
         # Save the plot as an image
         plt.savefig(self.output_image, bbox_inches='tight')
