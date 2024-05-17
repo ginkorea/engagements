@@ -100,9 +100,12 @@ class InformationEnvironmentGenerator:
 
         # Add legend at the bottom with total counts
         legend_elements = [
-            plt.Line2D([0], [0], marker='o', color='w', label=f'In Planning ({total_counts["in planning"]})', markerfacecolor='brown', markersize=10),
-            plt.Line2D([0], [0], marker='o', color='w', label=f'For Approval ({total_counts["for approval"]})', markerfacecolor='darkorange', markersize=10),
-            plt.Line2D([0], [0], marker='o', color='w', label=f'Approved ({total_counts["approved"]})', markerfacecolor='green', markersize=10)
+            plt.Line2D([0], [0], marker='o', color='w', label=f'In Planning ({total_counts["in planning"]})',
+                       markerfacecolor='brown', markersize=10),
+            plt.Line2D([0], [0], marker='o', color='w', label=f'For Approval ({total_counts["for approval"]})',
+                       markerfacecolor='darkorange', markersize=10),
+            plt.Line2D([0], [0], marker='o', color='w', label=f'Approved ({total_counts["approved"]})',
+                       markerfacecolor='green', markersize=10)
         ]
         ax.legend(handles=legend_elements, loc='lower center', bbox_to_anchor=(0.5, -0.2), ncol=3, fontsize=10)
 
