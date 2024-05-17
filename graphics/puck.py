@@ -2,7 +2,7 @@ import matplotlib.patches as mpatches
 
 
 class Puck:
-    def __init__(self, x, y, category, color, number, scale=1, font=10, zorder=11):
+    def __init__(self, x, y, category, color, number, scale=1, font=10, zorder=11, approved=True):
         self.x = x
         self.y = y
         self.category = category
@@ -11,6 +11,7 @@ class Puck:
         self.scale = scale
         self.font = font
         self.zorder = zorder
+        self.approved = approved
 
     def create_marker(self):
         if self.category == 'Mil-Mil (US)':
@@ -45,3 +46,17 @@ class Puck:
         else:
             return mpatches.Rectangle((self.x - 0.07 * self.scale, self.y - 0.07 * self.scale), 0.12 * self.scale,
                                       0.12 * self.scale, color=shadow_color, zorder=self.zorder - 1)
+
+
+class IEPuck(Puck):
+    def __init__(self, x, y, category, number, scale=1, font=10, zorder=11, approved=True):
+        super().__init__(x, y, category, 'gray', number, scale, font, zorder, approved)
+        self.update_color_based_on_status()
+
+    def update_color_based_on_status(self):
+        if self.approved == 0:
+            self.color = 'brown'
+        elif self.approved == 1:
+            self.color = 'darkorange'
+        elif self.approved == 2:
+            self.color = 'green'

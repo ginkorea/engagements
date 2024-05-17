@@ -7,6 +7,7 @@ class Server:
     def __init__(self, include_maps=False):
         self.files = []
         self.engagements = pd.read_csv(self.get_relative_path('engagements.csv'))
+        self.engagements90 = pd.read_csv(self.get_relative_path('engagements90.csv'))
         if include_maps:
             self.locations = pd.read_csv(self.get_relative_path('locations.csv'))
             self.bases = pd.read_csv(self.get_relative_path('bases.csv'))
