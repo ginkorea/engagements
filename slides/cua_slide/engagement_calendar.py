@@ -1,20 +1,22 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import timedelta
-from puck import Puck
+from graphics.puck import Puck
+from data.server import data_server
 
 
 class CalendarPlotter:
-    def __init__(self, engagements_file='data/engagements.csv', output_image='calendar.png'):
+    def __init__(self, fiscal_week, output_image='calendar.png'):
         self.start_date = None
-        self.engagements_file = engagements_file
+        self.fiscal_week = fiscal_week
+        self.server = data_server
         self.output_image = output_image
         self.engagements = self.load_engagements()
-        self.fig, self.ax = plt.subplots(figsize=(12, 12))
+        self.fig, self.ax = plt.subplots(figsize=(8, 8))
 
     def load_engagements(self):
         # Load engagement data from CSV
-        df = pd.read_csv(self.engagements_file)
+        df = self.server.engagements
         df['date'] = pd.to_datetime(df['date'])
         df['day'] = df['date'].dt.day_name()
         return df
@@ -43,7 +45,8 @@ class CalendarPlotter:
 
         # Label the weeks at intervals of 10
         for week in range(4):
-            self.ax.text(-2, week * 10 + 5, f'Week {week + 1}', ha='right', va='center', fontsize=10)
+            this_fiscal_week = week + self.fiscal_week
+            self.ax.text(-2, week * 10 + 5, f'Week {this_fiscal_week + 1}', ha='right', va='center', fontsize=10)
 
         # Calculate the starting date of the calendar (Monday of the first week)
         min_date = self.engagements['date'].min()
@@ -104,23 +107,24 @@ class CalendarPlotter:
         # Plot engagements
         for (week_index, day_index), info in engagements_by_date.items():
             x_pos = day_index * 10
-            y_pos = (week_index * 10) - 7
+            y_pos = (week_index * 10) - 6
 
             for idx, engagement in enumerate(info['engagements']):
                 y_offset = y_pos + 2 * idx  # Adjust y position by +2 for each additional event
 
                 puck = Puck(x_pos + 1, y_offset + 9, engagement['category'], engagement['color'],
-                            category_counters[engagement['category']], scale=5)
+                            category_counters[engagement['category']], scale=6, font=8)
                 puck.add_to_axes(self.ax)
                 category_counters[engagement['category']] += 1
 
                 # Wrap engagement text to fit within the day cell
                 wrapped_engagement = wrap_text(engagement['engagement'],
-                                               max_length=22)  # Adjust max_length as necessary
+                                               max_length=15)  # Adjust max_length as necessary
                 self.ax.text(x_pos + 2, y_offset + 9, wrapped_engagement, ha='left', va='center', fontsize=8, wrap=True)
 
         return category_counters
 
     def save_calendar(self):
         plt.savefig(self.output_image, bbox_inches='tight')
-        plt.close(self.fig)
+        plt.show()
+

@@ -1,24 +1,23 @@
 import geopandas as gpd
-import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from puck import Puck
+from graphics.puck import Puck
+from data.server import map_server
 
 
 class MapPlotter:
-    def __init__(self, engagements_file='data/engagements.csv', bases_file='data/bases.csv', output_image='map.png'):
-        self.engagements_file = engagements_file
-        self.bases_file = bases_file
+    def __init__(self, output_image='map.png'):
+        self.server = map_server
         self.output_image = output_image
         self.gdf = self.load_data()
         self.category_counters = {'Mil-Mil (US)': 0, 'Mil-Mil (ROK)': 0, 'Civ-Mil': 0}
 
     def load_data(self):
-        # Load base location data from CSV
-        bases_df = pd.read_csv(self.bases_file)
-        engagements_df = pd.read_csv(self.engagements_file)
+        # Load base location data from
+        bases_df = self.server.bases
+        engagements_df = self.server.engagements
 
         # Merge engagements with base locations on the base name
         merged_df = engagements_df.merge(bases_df, left_on='location', right_on='name', how='left')
@@ -31,7 +30,7 @@ class MapPlotter:
         gdf.set_crs(epsg=4326, inplace=True)
         return gdf
 
-    def plot_legend(self, ax, scale=1):
+    def plot_legend(self, ax, scale=3):
         # Add legend at the top of the map
         legend_x_start = 124.5
         legend_y = 38.8  # Adjust y position for the legend
@@ -39,10 +38,10 @@ class MapPlotter:
         colors = ['grey', 'grey', 'grey']
 
         # Draw white rectangle with a black outline around the legend
-        rect = mpatches.Rectangle((legend_x_start - 0.5, legend_y - 0.3), 8.5, 0.6 * scale, facecolor='white',
-                                  edgecolor='black', lw=1, zorder=1)
-        shadow = mpatches.Rectangle((legend_x_start - 0.52, legend_y - 0.32), 8.5, 0.6 * scale,
-                                    facecolor=(0, 0, 0, 0.3), zorder=0)
+        rect = mpatches.Rectangle((legend_x_start - 0.5, legend_y - 0.15), 8.5, 0.4 * scale, facecolor='white',
+                                  edgecolor='black', lw=1, zorder=31)
+        shadow = mpatches.Rectangle((legend_x_start - 0.52, legend_y - 0.15), 8.5, 0.4 * scale,
+                                    facecolor=(0, 0, 0, 0.3), zorder=30)
         ax.add_patch(shadow)
         ax.add_patch(rect)
 
@@ -51,9 +50,9 @@ class MapPlotter:
             x = legend_x_start + i * 2.5
             y = legend_y
 
-            puck = Puck(x, y, category, colors[i], count, scale=scale)
+            puck = Puck(x, y, category, colors[i], count, scale=scale, zorder=40)
             puck.add_to_axes(ax)
-            ax.text(x + 0.4 * scale, y, category, ha='left', va='center', fontsize=12 * scale, zorder=3)
+            ax.text(x + 0.4 * scale, y, category, ha='left', va='center', fontsize=16, zorder=50)
 
     def plot_map(self):
         # Create the plot with cartopy
@@ -66,20 +65,17 @@ class MapPlotter:
 
         # Color the map regions
         ax.add_feature(cfeature.OCEAN, facecolor='lightgrey')
-        ax.add_feature(cfeature.LAND, facecolor='lightblue')
+        ax.add_feature(cfeature.LAND, facecolor='lightgrey')
         ax.add_feature(cfeature.LAKES, facecolor='white')
         ax.add_feature(cfeature.RIVERS, edgecolor='blue')
 
         # Color South Korea and North Korea
-        countries = gpd.read_file('data/10m_cultural/ne_10m_admin_0_countries_usa.shp')
-        #countries = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+        countries = self.server.countries # gpd.read_file('../data/10m_cultural/ne_10m_admin_0_countries_usa.shp')
         rok = countries[countries['ADM0_A3_US'] == 'KOR']
-        # rok = gpd.read_file('data/10m_cultural/ne_10m_admin_0_countries_kor.shp')
-        dprk = countries[countries['ADM0_A3_US'] == 'PRK']
-        # dprk = gpd.read_file('data/10m_cultural/')
+        nk = countries[countries['ADM0_A3_US'] == 'PRK']
         jpn = countries[countries['ADM0_A3_US'] == 'JPN']
         rok.plot(ax=ax, facecolor='lightblue')
-        dprk.plot(ax=ax, facecolor='red')
+        nk.plot(ax=ax, facecolor='red')
         jpn.plot(ax=ax, facecolor='white')
 
         # Plot the GeoDataFrame

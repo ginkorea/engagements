@@ -4,13 +4,15 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from datetime import datetime
+from data.server import data_server
 
 
 class EngagementsPlotter:
-    def __init__(self, engagements_file='data/engagements.csv', bases_file='data/bases.csv',
-                 calendar_output='calendar.png', map_output='map.png', ppt_output='engagements.pptx'):
-        self.calendar_plotter = CalendarPlotter(engagements_file, calendar_output)
-        self.map_plotter = MapPlotter(engagements_file, bases_file, map_output)
+    def __init__(self, calendar_output='calendar.png', map_output='map.png', ppt_output='engagements.pptx'):
+        self.server = data_server
+        self.fiscal_week = self.get_fiscal_week()
+        self.calendar_plotter = CalendarPlotter(self.fiscal_week, calendar_output)
+        self.map_plotter = MapPlotter(map_output)
         self.ppt_output = ppt_output
         self.slide = None
 
@@ -24,10 +26,10 @@ class EngagementsPlotter:
     def add_title(self):
         fiscal_week = self.get_fiscal_week()
         title = f"2ID/RUCD Current Engagements (Week {fiscal_week} to {fiscal_week + 4})"
-        title_box = self.slide.shapes.add_textbox(0, 0, width=Inches(10), height=Inches(1))
+        title_box = self.slide.shapes.add_textbox(0, 0, width=Inches(10), height=Inches(1.5))
         title_frame = title_box.text_frame
         title_frame.text = title
-        title_frame.paragraphs[0].font.size = Pt(24)
+        title_frame.paragraphs[0].font.size = Pt(30)
         title_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
 
         # Set no padding or margin for the title
