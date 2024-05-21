@@ -1,6 +1,2 @@
-id,engagement,date,location,category,type,status,loe,subordinate_objective,purpose,2id_rucd_attendees,relevant_attendees,uniform
-1,Joint Training Exercise,2024-06-15,Camp Humphreys,Mil-Mil (US),Training,1,LOE 1: Readiness,Enhance operational readiness,"To improve interoperability between U.S. and ROK forces",Colonel Smith,General Lee; Major Park; Lieutenant Kim,ACU
-2,Strategic Planning Meeting,2024-06-20,Camp Casey,Mil-Mil (ROK),Planning,2,LOE 2: Shape the Theater,Strengthen regional stability,"To discuss future strategic initiatives",Major Brown,Colonel Choi; Captain Lee,Service Dress
-3,Community Outreach Program,2024-06-25,Seoul,Civ-Mil,Outreach,0,LOE 4: People,Build community relations,"To engage with the local community and enhance mutual understanding",Captain Jones,Mr. Kim; Ms. Park,Civilian Attire
-4,High-Level Meeting,2024-06-30,Camp Red Cloud,Higher,Meeting,2,LOE 3: Strengthen the Alliance,Reinforce alliance commitments,"To discuss high-level alliance strategies",General White,General Kim; Ambassador Lee,Service Dress
-5,Annual Holiday Event,2024-07-04,Camp Walker,Holidays,Event,2,LOE 4: People,Boost morale,"To celebrate the holiday and foster camaraderie",Colonel Black,All personnel invited,Casual
+Event,Date/Time,Location,Line of Effort,Subordinate Objective,Purpose,2ID/RUCD Attendees,Relevant Attendees,Uniform,Messages / Effects,Legal Review,Gift,PAO Support,Inclement Weather
+Joint Training Exercise,2024-06-15,Camp Humphreys,LOE 1: Readiness,Enhance operational readiness,To improve interoperability between U.S. and ROK forces,Colonel Smith,General Lee; Major Park; Lieutenant Kim,ACU,Increase readiness; Build relationships,Yes,No,All,None
